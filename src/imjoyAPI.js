@@ -8,7 +8,7 @@ export async function setupImJoyAPI({ editor }) {
     version: "0.1.0",
     description: "ImJoyFiddle -- a playground for ImJoy plugins",
     type: "rpc-window",
-    defaults: {fullscreen: true}
+    defaults: { fullscreen: true }
   });
 
   const service_api = {

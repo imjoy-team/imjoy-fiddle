@@ -209,12 +209,12 @@ export default {
     },
     async run() {
       const p = await this.api.getPlugin(this.editor.getValue());
-      console.log('=============>', p)
+      console.log("=============>", p);
       p.run();
     },
     save() {},
     exportFile() {
-      this.api.exportFile(this.editor.getValue(), 'myPlugin.imjoy.html')
+      this.api.exportFile(this.editor.getValue(), "myPlugin.imjoy.html");
     }
   }
 };
