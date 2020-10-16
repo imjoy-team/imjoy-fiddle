@@ -209,7 +209,6 @@ export default {
     },
     async run() {
       const p = await this.api.getPlugin(this.editor.getValue());
-      console.log("=============>", p);
       p.run();
     },
     save() {},
