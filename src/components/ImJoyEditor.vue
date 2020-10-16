@@ -23,9 +23,9 @@
         <b-navbar-item href="#" @click="run">
           <b-icon icon="play"></b-icon> Run
         </b-navbar-item>
-        <b-navbar-item href="#" @click="save">
+        <!-- <b-navbar-item href="#" @click="save">
           <b-icon icon="content-save"></b-icon> Save
-        </b-navbar-item>
+        </b-navbar-item> -->
         <b-navbar-item href="#" @click="exportFile()">
           <b-icon icon="file-download-outline"></b-icon> Export
         </b-navbar-item>
@@ -106,6 +106,7 @@ export default {
     return {
       version: version,
       code: "",
+      api: null,
       templates: [
         {
           name: "default",
@@ -179,11 +180,8 @@ export default {
   mounted() {
     // inside an iframe
     if (window.self !== window.top) {
-      setupImJoyAPI({
-        addLayer: this.addLayer,
-        removeLayer: this.removeLayer,
-        clearLayers: this.clearLayers,
-        setUI: this.setUI
+      setupImJoyAPI({ editor: this.editor }).then(api => {
+        this.api = api;
       });
     }
     // reset the height whenever the window's resized
@@ -209,9 +207,15 @@ export default {
       const temp = await new Response(blob).text();
       this.code = temp;
     },
-    run() {},
+    async run() {
+      const p = await this.api.getPlugin(this.editor.getValue());
+      console.log('=============>', p)
+      p.run();
+    },
     save() {},
-    exportFile() {}
+    exportFile() {
+      this.api.exportFile(this.editor.getValue(), 'myPlugin.imjoy.html')
+    }
   }
 };
 </script>
