@@ -1,35 +1,35 @@
 <template>
   <div>
-    <b-navbar>
-      <template slot="brand">
-        <b-navbar-item tag="router-link" :to="{ path: '/' }">
-          <img
-            src="https://imjoy.io/static/img/imjoy-logo-black.png"
-            alt="ImJoy"
-          />
+    <div class="navbar" is-block>
+      <!-- <template slot="brand"> -->
+      <b-navbar-item tag="router-link" :to="{ path: '/' }">
+        <img
+          src="https://imjoy.io/static/img/imjoy-logo-black.png"
+          alt="ImJoy"
+        />
+      </b-navbar-item>
+      <!-- </template> -->
+      <!-- <template slot="start"> -->
+      <b-navbar-dropdown label="New">
+        <b-navbar-item
+          href="#"
+          v-for="t in templates"
+          @click="loadTemplate(t.url)"
+          :key="t.name"
+        >
+          {{ t.name }}
         </b-navbar-item>
-      </template>
-      <template slot="start">
-        <b-navbar-dropdown label="New">
-          <b-navbar-item
-            href="#"
-            v-for="t in templates"
-            @click="loadTemplate(t.url)"
-            :key="t.name"
-          >
-            {{ t.name }}
-          </b-navbar-item>
-        </b-navbar-dropdown>
-        <b-navbar-item href="#" @click="run">
-          <b-icon icon="play"></b-icon> Run
-        </b-navbar-item>
-        <!-- <b-navbar-item href="#" @click="save">
+      </b-navbar-dropdown>
+      <b-navbar-item href="#" @click="run">
+        <b-icon icon="play"></b-icon> Run
+      </b-navbar-item>
+      <!-- <b-navbar-item href="#" @click="save">
           <b-icon icon="content-save"></b-icon> Save
         </b-navbar-item> -->
-        <b-navbar-item href="#" @click="exportFile()">
-          <b-icon icon="file-download-outline"></b-icon> Export
-        </b-navbar-item>
-      </template>
+      <b-navbar-item href="#" @click="exportFile()">
+        <b-icon icon="file-download-outline"></b-icon> Export
+      </b-navbar-item>
+      <!-- </template> -->
 
       <!-- <template slot="end">
             <b-navbar-item tag="div">
@@ -43,7 +43,7 @@
                 </div>
             </b-navbar-item>
         </template> -->
-    </b-navbar>
+    </div>
     <div class="editor">
       <codemirror
         ref="cmEditor"
@@ -225,5 +225,60 @@ export default {
 }
 .mdi {
   margin-right: 10px;
+}
+.navbar {
+  align-items: stretch;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  min-height: 2.6rem !important;
+}
+.navbar-item {
+  height: 2.6rem;
+}
+.navbar-item.has-dropdown {
+  -webkit-box-align: stretch;
+  -ms-flex-align: stretch;
+  align-items: stretch;
+}
+
+.navbar-item,
+.navbar-link {
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.navbar-dropdown {
+  background-color: white;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-top: 2px solid #dbdbdb;
+  -webkit-box-shadow: 0 8px 8px rgba(10, 10, 10, 0.1);
+  box-shadow: 0 8px 8px rgba(10, 10, 10, 0.1);
+  display: none;
+  font-size: 0.875rem;
+  left: 0;
+  min-width: 100%;
+  position: absolute;
+  top: 100%;
+  z-index: 20;
+}
+
+.navbar-item.is-active .navbar-dropdown,
+.navbar-item.is-hoverable:focus .navbar-dropdown,
+.navbar-item.is-hoverable:focus-within .navbar-dropdown,
+.navbar-item.is-hoverable:hover .navbar-dropdown {
+  display: block;
+}
+.navbar-dropdown a.navbar-item {
+  padding-right: 3rem;
+}
+.navbar-dropdown .navbar-item {
+  padding: 0.375rem 1rem;
+  white-space: nowrap !important;
 }
 </style>
