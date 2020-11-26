@@ -1,5 +1,11 @@
 <template>
   <div>
+    <div class="lds-ellipsis" v-show="loading">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
     <div class="navbar" is-block>
       <!-- <template slot="brand"> -->
       <b-navbar-item tag="router-link" :to="{ path: '/' }">
@@ -10,7 +16,7 @@
       </b-navbar-item>
       <!-- </template> -->
       <!-- <template slot="start"> -->
-      <b-navbar-dropdown label="New">
+      <b-navbar-dropdown v-if="config.show_new" label="New">
         <b-navbar-item
           href="#"
           v-for="t in templates"
@@ -20,6 +26,13 @@
           {{ t.name }}
         </b-navbar-item>
       </b-navbar-dropdown>
+      <b-navbar-item
+        href="#"
+        v-if="config.show_reset && originalSource && codeChanged"
+        @click="resetSourceCode"
+      >
+        <b-icon icon="backup-restore"></b-icon> Reset
+      </b-navbar-item>
       <b-navbar-item href="#" @click="run">
         <b-icon icon="play"></b-icon> Run
       </b-navbar-item>
@@ -29,6 +42,17 @@
       <b-navbar-item href="#" @click="exportFile()">
         <b-icon icon="file-download-outline"></b-icon> Export
       </b-navbar-item>
+
+      <b-navbar-dropdown v-if="pluginAPI" label="Plugin API">
+        <b-navbar-item
+          href="#"
+          v-for="(apiFunc, name) in pluginAPI"
+          @click="runPluginAPI(name)"
+          :key="name"
+        >
+          {{ name }}
+        </b-navbar-item>
+      </b-navbar-dropdown>
       <!-- </template> -->
 
       <!-- <template slot="end">
@@ -104,9 +128,12 @@ export default {
   components: { codemirror },
   data() {
     return {
+      config: { show_new: true, show_reset: false },
       version: version,
       code: "",
+      loading: false,
       api: null,
+      plugin: null,
       templates: [
         {
           name: "default",
@@ -180,7 +207,7 @@ export default {
   mounted() {
     // inside an iframe
     if (window.self !== window.top) {
-      setupImJoyAPI({ editor: this.editor }).then(api => {
+      setupImJoyAPI({ loadSourceCode: this.loadSourceCode }).then(api => {
         this.api = api;
       });
     }
@@ -192,11 +219,31 @@ export default {
     window.removeEventListener("resize", this.updateSize);
   },
   computed: {
+    codeChanged() {
+      return this.originalSource && this.originalSource !== this.code;
+    },
     editor() {
       return this.$refs.cmEditor.codemirror;
+    },
+    pluginAPI() {
+      if (!this.plugin) return null;
+      const api = {};
+      for (let k of Object.keys(this.plugin)) {
+        if (["on", "off", "_rintf", "emit", "setup"].includes(k)) continue;
+        api[k] = this.plugin[k];
+      }
+      return api;
     }
   },
   methods: {
+    loadSourceCode(code, config) {
+      this.originalSource = code;
+      this.editor.setValue(code);
+      this.config = config || { show_new: true, show_reset: true };
+    },
+    resetSourceCode() {
+      if (this.originalSource) this.editor.setValue(this.originalSource);
+    },
     updateSize() {
       const bbox = document.body.getBoundingClientRect();
       this.editor.setSize(bbox.width, bbox.height - 52);
@@ -208,8 +255,39 @@ export default {
       this.code = temp;
     },
     async run() {
-      const p = await this.api.getPlugin(this.editor.getValue());
-      p.run();
+      try {
+        this.loading = true;
+        this.plugin = await this.api.getPlugin(this.editor.getValue(), {
+          namespace: this.config.namespace
+        });
+        if (this.plugin.setup) {
+          await this.plugin.setup();
+        }
+        if (this.plugin.run) {
+          return await this.plugin.run({ config: {}, data: {} });
+        }
+        this.api.showMessage("Successfully loaded plugin.");
+      } catch (e) {
+        this.api.showMessage("Failed to load plugin, error: " + e.toString());
+      } finally {
+        this.loading = false;
+      }
+    },
+    async runPluginAPI(name) {
+      try {
+        this.loading = true;
+        if (name === "run") {
+          await this.plugin[name]({ config: {}, data: {} });
+        } else {
+          await this.plugin[name]();
+        }
+      } catch (e) {
+        this.api.showMessage(
+          `Failed to run api function (${name}), error: ${e}`
+        );
+      } finally {
+        this.loading = false;
+      }
     },
     save() {},
     exportFile() {
@@ -280,5 +358,76 @@ export default {
 .navbar-dropdown .navbar-item {
   padding: 0.375rem 1rem;
   white-space: nowrap !important;
+}
+
+.lds-ellipsis {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  top: calc(50% - 70px);
+  left: 50%;
+  z-index: 9999;
+  transform: translate(-50%, 0);
+}
+
+.lds-ellipsis div {
+  position: absolute;
+  top: 33px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #7957d5;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+  left: 8px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(2) {
+  left: 8px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(3) {
+  left: 32px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(4) {
+  left: 56px;
+  animation: lds-ellipsis3 0.6s infinite;
+}
+
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(24px, 0);
+  }
 }
 </style>

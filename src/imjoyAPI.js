@@ -1,4 +1,4 @@
-export async function setupImJoyAPI({ editor }) {
+export async function setupImJoyAPI({ loadSourceCode }) {
   const imjoyRPC = await window.imjoyLoader.loadImJoyRPC({
     api_version: "0.2.3"
   });
@@ -17,7 +17,7 @@ export async function setupImJoyAPI({ editor }) {
     },
     async run(ctx) {
       if (ctx && ctx.data && ctx.data.code) {
-        editor.setValue(ctx.data.code);
+        loadSourceCode(ctx.data.code, ctx.config);
       }
     }
   };
