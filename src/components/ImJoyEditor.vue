@@ -300,9 +300,6 @@ export default {
           this.cmOptions.mode = IMJOY_MODE;
         }
         this.editor.setValue(code);
-        this.api.showMessage(
-          `Successfully loaded code from file: ${file.name}`
-        );
       };
       reader.onerror = e => {
         console.error(e);
@@ -382,6 +379,7 @@ export default {
     async run() {
       try {
         this.loading = true;
+        this.api.showProgress(0);
         this.plugin = await this.api.getPlugin(this.editor.getValue(), {
           namespace: this.config.namespace
         });
@@ -399,6 +397,7 @@ export default {
         this.api.showMessage("Failed to load plugin, error: " + e.toString());
       } finally {
         this.loading = false;
+        this.api.showProgress(100);
       }
     },
     stop() {
