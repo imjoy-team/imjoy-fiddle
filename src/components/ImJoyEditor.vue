@@ -16,34 +16,43 @@
       </b-navbar-item>
       <!-- </template> -->
       <!-- <template slot="start"> -->
-      <b-navbar-dropdown v-if="config.show_new" label="New">
+      <b-navbar-dropdown v-if="config.show_file_menu" label="File">
+        <b-navbar-item
+          href="#"
+          v-if="originalSource && codeChanged"
+          @click="resetSourceCode"
+        >
+          <b-icon icon="backup-restore"></b-icon> Reset
+        </b-navbar-item>
         <b-navbar-item
           href="#"
           v-for="t in templates"
           @click="loadTemplate(t.url)"
           :key="t.name"
         >
-          {{ t.name }}
+          <b-icon icon="file-star-outline"></b-icon>{{ t.name }} template
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-item
+        v-if="config.show_install && api && api.installPlugin"
+        :disabled="loading"
         href="#"
-        v-if="config.show_reset && originalSource && codeChanged"
-        @click="resetSourceCode"
+        @click="install"
       >
-        <b-icon icon="backup-restore"></b-icon> Reset
+        <b-icon icon="harddisk-plus"></b-icon> Install
       </b-navbar-item>
-      <b-navbar-item href="#" @click="run">
+      <b-navbar-item :disabled="loading" href="#" @click="run">
         <b-icon icon="play"></b-icon> Run
       </b-navbar-item>
       <!-- <b-navbar-item href="#" @click="save">
           <b-icon icon="content-save"></b-icon> Save
         </b-navbar-item> -->
-      <b-navbar-item href="#" @click="exportFile()">
-        <b-icon icon="file-download-outline"></b-icon> Export
-      </b-navbar-item>
 
-      <b-navbar-dropdown v-if="pluginAPI" label="Plugin API">
+      <b-navbar-dropdown
+        :disabled="loading"
+        v-if="pluginAPI"
+        label="Plugin API"
+      >
         <b-navbar-item
           href="#"
           v-for="(apiFunc, name) in pluginAPI"
@@ -53,6 +62,10 @@
           {{ name }}
         </b-navbar-item>
       </b-navbar-dropdown>
+
+      <b-navbar-item href="#" @click="exportFile()">
+        <b-icon icon="file-download-outline"></b-icon> Export
+      </b-navbar-item>
       <!-- </template> -->
 
       <!-- <template slot="end">
@@ -123,22 +136,38 @@ import "codemirror/addon/fold/foldgutter.js";
 // import 'codemirror/addon/fold/indent-fold.js'
 import "codemirror/addon/fold/markdown-fold.js";
 import "codemirror/addon/fold/xml-fold.js";
+
+const IMJOY_MODE = {
+  name: "htmlmixed",
+  tags: {
+    docs: [[null, null, "markdown"]],
+    config: [
+      ["lang", /^json$/, "javascript"],
+      ["lang", /^yaml$/, "yaml"],
+      [null, null, "javascript"]
+    ],
+    script: [
+      ["lang", /^python$/, "python"],
+      [null, null, "javascript"]
+    ]
+  }
+};
 export default {
   name: "ImJoyEditor",
   components: { codemirror },
   data() {
     return {
-      config: { show_new: true, show_reset: false },
+      config: { show_file_menu: true, show_install: false },
       version: version,
       code: "",
       loading: false,
+      originalSource: null,
       api: null,
       plugin: null,
       templates: [
         {
-          name: "default",
-          url:
-            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webWorkerTemplate.imjoy.html"
+          name: "empty",
+          url: null
         },
         {
           name: "window",
@@ -177,21 +206,8 @@ export default {
         hintOptions: {
           completeSingle: false
         },
-        mode: {
-          name: "htmlmixed",
-          tags: {
-            docs: [[null, null, "markdown"]],
-            config: [
-              ["lang", /^json$/, "javascript"],
-              ["lang", /^yaml$/, "yaml"],
-              [null, null, "javascript"]
-            ],
-            script: [
-              ["lang", /^python$/, "python"],
-              [null, null, "javascript"]
-            ]
-          }
-        },
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        mode: IMJOY_MODE,
         extraKeys: {
           Ctrl: "autocomplete",
           F11(cm) {
@@ -239,7 +255,37 @@ export default {
     loadSourceCode(code, config) {
       this.originalSource = code;
       this.editor.setValue(code);
-      this.config = config || { show_new: true, show_reset: true };
+      this.config = config || {};
+      this.config.lang = this.config.lang || "html";
+      if (this.config.lang === "html") {
+        this.cmOptions.mode = IMJOY_MODE;
+      } else if (
+        this.config.lang === "js" ||
+        this.config.lang === "javascript"
+      ) {
+        this.cmOptions.mode = {
+          name: "javascript"
+        };
+      } else if (this.config.lang === "py" || this.config.lang === "python") {
+        this.cmOptions.mode = {
+          name: "python"
+        };
+      }
+      if (this.config.show_file_menu === undefined)
+        this.config.show_file_menu = true;
+      if (this.config.fold) {
+        if (Array.isArray(this.config.fold)) {
+          for (const l of this.config.fold) {
+            this.editor.foldCode(this.editor.constructor.Pos(l, 0));
+          }
+        } else
+          this.editor.foldCode(
+            this.editor.constructor.Pos(this.config.fold, 0)
+          );
+      }
+      if (this.config.autorun) {
+        this.run();
+      }
     },
     resetSourceCode() {
       if (this.originalSource) this.editor.setValue(this.originalSource);
@@ -250,9 +296,29 @@ export default {
       setTimeout(this.editor.refresh(), 1);
     },
     async loadTemplate(url) {
+      if (!url) {
+        this.code = "";
+        return;
+      }
       const blob = await fetch(url).then(r => r.blob());
       const temp = await new Response(blob).text();
       this.code = temp;
+    },
+    async install() {
+      try {
+        this.loading = true;
+        this.plugin = await this.api.installPlugin({
+          code: this.editor.getValue(),
+          namespace: this.config.namespace
+        });
+        this.api.showMessage("Successfully installed plugin.");
+      } catch (e) {
+        this.api.showMessage(
+          "Failed to install plugin, error: " + e.toString()
+        );
+      } finally {
+        this.loading = false;
+      }
     },
     async run() {
       try {
@@ -276,10 +342,14 @@ export default {
     async runPluginAPI(name) {
       try {
         this.loading = true;
-        if (name === "run") {
-          await this.plugin[name]({ config: {}, data: {} });
+        if (typeof this.plugin[name] === "function") {
+          if (name === "run") {
+            await this.plugin[name]({ config: {}, data: {} });
+          } else {
+            await this.plugin[name]();
+          }
         } else {
-          await this.plugin[name]();
+          this.api.alert(JSON.stringify(this.plugin[name]));
         }
       } catch (e) {
         this.api.showMessage(
@@ -314,6 +384,17 @@ export default {
 .navbar-item {
   height: 2.6rem;
 }
+
+.navbar-item[disabled],
+.navbar-dropdown[disabled] {
+  background-color: white;
+  border-color: #dbdbdb;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .navbar-item.has-dropdown {
   -webkit-box-align: stretch;
   -ms-flex-align: stretch;
