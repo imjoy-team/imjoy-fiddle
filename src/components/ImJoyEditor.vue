@@ -66,6 +66,15 @@
       <b-navbar-item href="#" @click="exportFile()">
         <b-icon icon="file-download-outline"></b-icon> Export
       </b-navbar-item>
+
+      <b-navbar-item
+        href="#"
+        style="color: #ff0080cf"
+        v-show="loading"
+        @click="stop"
+      >
+        <b-icon icon="stop"></b-icon> Stop
+      </b-navbar-item>
       <!-- </template> -->
 
       <!-- <template slot="end">
@@ -326,18 +335,27 @@ export default {
         this.plugin = await this.api.getPlugin(this.editor.getValue(), {
           namespace: this.config.namespace
         });
+        if (!this.loading) {
+          this.plugin = null;
+          return;
+        }
         if (this.plugin.setup) {
           await this.plugin.setup();
         }
+        if (!this.loading) return;
         if (this.plugin.run) {
           return await this.plugin.run({ config: {}, data: {} });
         }
+        if (!this.loading) return;
         this.api.showMessage("Successfully loaded plugin.");
       } catch (e) {
         this.api.showMessage("Failed to load plugin, error: " + e.toString());
       } finally {
         this.loading = false;
       }
+    },
+    stop() {
+      this.loading = false;
     },
     async runPluginAPI(name) {
       try {
