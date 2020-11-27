@@ -6,6 +6,15 @@
       <div></div>
       <div></div>
     </div>
+    <form v-show="false" ref="file_form">
+      <input
+        class="md-file"
+        type="file"
+        @change="fileSelected"
+        ref="file_select"
+        multiple
+      />
+    </form>
     <div class="navbar" is-block>
       <!-- <template slot="brand"> -->
       <b-navbar-item tag="router-link" :to="{ path: '/' }">
@@ -17,6 +26,13 @@
       <!-- </template> -->
       <!-- <template slot="start"> -->
       <b-navbar-dropdown v-if="config.show_file_menu" label="File">
+        <b-navbar-item
+          :disabled="loading"
+          href="#"
+          @click="$refs.file_select.click()"
+        >
+          <b-icon icon="file-code-outline"></b-icon> Open Local File
+        </b-navbar-item>
         <b-navbar-item
           href="#"
           v-if="originalSource && codeChanged"
@@ -261,6 +277,40 @@ export default {
     }
   },
   methods: {
+    fileSelected() {
+      if (!this.$refs.file_select.files) return;
+      const file = this.$refs.file_select.files[0];
+      this.loadCodeFromFile(file);
+    },
+    loadCodeFromFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const code = reader.result;
+        this.originalSource = code;
+        if (file.name.endsWith(".js")) {
+          this.cmOptions.mode = {
+            name: "javascript"
+          };
+        } else if (file.name.endsWith(".py")) {
+          this.cmOptions.mode = {
+            name: "python"
+          };
+        } else if (file.name.endsWith(".imjoy.html")) {
+          this.cmOptions.mode = IMJOY_MODE;
+        }
+        this.editor.setValue(code);
+        this.api.showMessage(
+          `Successfully loaded code from file: ${file.name}`
+        );
+      };
+      reader.onerror = e => {
+        console.error(e);
+        this.api.showMessage(`Failed to load plugin source code, error: ${e}`);
+        this.$forceUpdate();
+      };
+      reader.readAsText(file);
+    },
     loadSourceCode(code, config) {
       this.originalSource = code;
       this.editor.setValue(code);
@@ -338,9 +388,6 @@ export default {
         if (!this.loading) {
           this.plugin = null;
           return;
-        }
-        if (this.plugin.setup) {
-          await this.plugin.setup();
         }
         if (!this.loading) return;
         if (this.plugin.run) {
