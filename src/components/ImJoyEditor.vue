@@ -49,8 +49,8 @@
         >
           <b-icon icon="file-star-outline"></b-icon>{{ t.name }} template
         </b-navbar-item>
-        <b-navbar-item href="#" @click="exportFile()">
-          <b-icon icon="file-download-outline"></b-icon> Export
+        <b-navbar-item href="#" @click="saveFile()" v-show="config.enable_save">
+          <b-icon icon="file-download-outline"></b-icon> Save File
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-item
@@ -490,7 +490,7 @@ export default {
         this.loading = false;
       }
     },
-    exportFile() {
+    saveFile() {
       this.api.exportFile(this.editor.getValue(), "myPlugin.imjoy.html");
     }
   }
