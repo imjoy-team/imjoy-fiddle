@@ -42,11 +42,15 @@
         </b-navbar-item>
         <b-navbar-item
           href="#"
+          v-show="config.enable_tempates"
           v-for="t in templates"
           @click="loadTemplate(t.url)"
           :key="t.name"
         >
           <b-icon icon="file-star-outline"></b-icon>{{ t.name }} template
+        </b-navbar-item>
+        <b-navbar-item href="#" @click="exportFile()">
+          <b-icon icon="file-download-outline"></b-icon> Export
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-item
@@ -58,10 +62,12 @@
         <b-icon icon="harddisk-plus"></b-icon> Install
       </b-navbar-item>
 
-      <template v-for="elm in config.ui_elements || []">
+      <template v-for="(elm, k) in config.ui_elements || {}">
         <b-navbar-item
           v-if="elm.type === 'button'"
-          :key="elm.label"
+          :key="k"
+          v-show="elm.visible"
+          :style="elm.style"
           href="#"
           @click="elm.callback(code)"
         >
@@ -69,12 +75,14 @@
         </b-navbar-item>
         <b-navbar-dropdown
           v-else-if="elm.type === 'dropdown'"
-          :key="elm.label"
+          :key="k"
           :label="elm.label"
+          v-show="elm.visible"
         >
           <b-navbar-item
             href="#"
             v-for="item in elm.items"
+            :style="item.style"
             @click="item.callback(code)"
             :key="item.label"
           >
@@ -82,7 +90,12 @@
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>
-      <b-navbar-item :disabled="loading" href="#" @click="run">
+      <b-navbar-item
+        :disabled="loading"
+        v-if="config.enable_run_button"
+        href="#"
+        @click="run"
+      >
         <b-icon icon="play"></b-icon> Run
       </b-navbar-item>
       <b-navbar-dropdown
@@ -100,15 +113,12 @@
         </b-navbar-item>
       </b-navbar-dropdown>
 
-      <b-navbar-item href="#" @click="exportFile()">
-        <b-icon icon="file-download-outline"></b-icon> Export
-      </b-navbar-item>
-
       <b-navbar-item
         href="#"
         style="color: #ff0080cf"
         v-show="loading"
         @click="stop"
+        v-if="config.enable_stop_button"
       >
         <b-icon icon="stop"></b-icon> Stop
       </b-navbar-item>
@@ -285,7 +295,13 @@ export default {
   mounted() {
     // inside an iframe
     if (window.self !== window.top) {
-      setupImJoyAPI({ loadSourceCode: this.loadSourceCode }).then(api => {
+      setupImJoyAPI({
+        loadSourceCode: this.loadSourceCode,
+        setLoader: this.setLoader,
+        updateUIElement: this.updateUIElement,
+        addUIElement: this.addUIElement,
+        removeUIElement: this.removeUIElement
+      }).then(api => {
         this.api = api;
       });
     }
@@ -376,9 +392,6 @@ export default {
             this.editor.constructor.Pos(this.config.fold, 0)
           );
       }
-      if (this.config.autorun) {
-        this.run();
-      }
     },
     resetSourceCode() {
       if (this.originalSource) this.editor.setValue(this.originalSource);
@@ -435,6 +448,24 @@ export default {
         this.loading = false;
         this.api.showProgress(100);
       }
+    },
+    setLoader(loading) {
+      this.loading = loading;
+      this.$forceUpdate();
+    },
+    updateUIElement(k, newConfig) {
+      const oldConfig = this.config.ui_elements[k];
+      for (const c of Object.keys(newConfig)) {
+        oldConfig[c] = newConfig[c];
+      }
+    },
+    addUIElement(k, config) {
+      this.config.ui_elements[k] = config;
+      this.$forceUpdate();
+    },
+    removeUIElement(k) {
+      delete this.config.ui_elements[k];
+      this.$forceUpdate();
     },
     stop() {
       this.loading = false;

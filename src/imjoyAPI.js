@@ -1,4 +1,10 @@
-export async function setupImJoyAPI({ loadSourceCode }) {
+export async function setupImJoyAPI({
+  loadSourceCode,
+  setLoader,
+  updateUIElement,
+  addUIElement,
+  removeUIElement
+}) {
   const imjoyRPC = await window.imjoyLoader.loadImJoyRPC({
     api_version: "0.2.3"
   });
@@ -19,7 +25,11 @@ export async function setupImJoyAPI({ loadSourceCode }) {
       if (ctx && ctx.data && ctx.data.code) {
         loadSourceCode(ctx.data.code, ctx.config);
       }
-    }
+    },
+    setLoader,
+    updateUIElement,
+    addUIElement,
+    removeUIElement
   };
   api.export(service_api);
   return api;
