@@ -240,6 +240,22 @@ export default {
           },
           Esc(cm) {
             if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+          },
+          Tab: cm => {
+            if (cm.somethingSelected()) {
+              cm.indentSelection("add");
+              return;
+            }
+
+            if (this.config.indentWithTabs)
+              cm.replaceSelection("\t", "end", "+input");
+            else cm.execCommand("insertSoftTab");
+          },
+          "Shift-Tab": cm => {
+            cm.indentSelection("subtract");
+          },
+          "Shift-Enter": () => {
+            this.run();
           }
         }
       }
