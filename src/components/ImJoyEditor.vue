@@ -57,13 +57,34 @@
       >
         <b-icon icon="harddisk-plus"></b-icon> Install
       </b-navbar-item>
+
+      <template v-for="elm in config.ui_elements || []">
+        <b-navbar-item
+          v-if="elm.type === 'button'"
+          :key="elm.label"
+          href="#"
+          @click="elm.callback(code)"
+        >
+          <b-icon v-if="elm.icon" :icon="elm.icon"></b-icon> {{ elm.label }}
+        </b-navbar-item>
+        <b-navbar-dropdown
+          v-else-if="elm.type === 'dropdown'"
+          :key="elm.label"
+          :label="elm.label"
+        >
+          <b-navbar-item
+            href="#"
+            v-for="item in elm.items"
+            @click="item.callback(code)"
+            :key="item.label"
+          >
+            {{ item.label }}
+          </b-navbar-item>
+        </b-navbar-dropdown>
+      </template>
       <b-navbar-item :disabled="loading" href="#" @click="run">
         <b-icon icon="play"></b-icon> Run
       </b-navbar-item>
-      <!-- <b-navbar-item href="#" @click="save">
-          <b-icon icon="content-save"></b-icon> Save
-        </b-navbar-item> -->
-
       <b-navbar-dropdown
         :disabled="loading"
         v-if="pluginAPI"
@@ -438,7 +459,6 @@ export default {
         this.loading = false;
       }
     },
-    save() {},
     exportFile() {
       this.api.exportFile(this.editor.getValue(), "myPlugin.imjoy.html");
     }
