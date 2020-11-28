@@ -408,7 +408,6 @@ export default {
           return await this.plugin.run({ config: {}, data: {} });
         }
         if (!this.loading) return;
-        this.api.showMessage("Successfully loaded plugin.");
       } catch (e) {
         this.api.showMessage("Failed to load plugin, error: " + e.toString());
       } finally {
