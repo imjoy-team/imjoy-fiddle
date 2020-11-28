@@ -296,6 +296,12 @@ export default {
     // inside an iframe
     if (window.self !== window.top) {
       setupImJoyAPI({
+        setContent(content) {
+          this.code = content;
+        },
+        getContent() {
+          return this.code;
+        },
         loadSourceCode: this.loadSourceCode,
         setLoader: this.setLoader,
         updateUIElement: this.updateUIElement,

@@ -1,5 +1,7 @@
 export async function setupImJoyAPI({
   loadSourceCode,
+  setContent,
+  getContent,
   setLoader,
   updateUIElement,
   addUIElement,
@@ -26,6 +28,8 @@ export async function setupImJoyAPI({
         loadSourceCode(ctx.data.code, ctx.config);
       }
     },
+    setContent,
+    getContent,
     setLoader,
     updateUIElement,
     addUIElement,
