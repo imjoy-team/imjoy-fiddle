@@ -33,13 +33,7 @@
         >
           <b-icon icon="file-code-outline"></b-icon> Open Local File
         </b-navbar-item>
-        <b-navbar-item
-          href="#"
-          v-if="originalSource && codeChanged"
-          @click="resetSourceCode"
-        >
-          <b-icon icon="backup-restore"></b-icon> Reset
-        </b-navbar-item>
+
         <b-navbar-item
           href="#"
           v-show="config.enable_tempates"
@@ -61,7 +55,13 @@
       >
         <b-icon icon="harddisk-plus"></b-icon> Install
       </b-navbar-item>
-
+      <b-navbar-item
+        href="#"
+        v-if="originalSource && codeChanged"
+        @click="resetSourceCode"
+      >
+        <b-icon icon="backup-restore"></b-icon> Reset
+      </b-navbar-item>
       <template v-for="(elm, k) in config.ui_elements || {}">
         <b-navbar-item
           v-if="elm.type === 'button'"
