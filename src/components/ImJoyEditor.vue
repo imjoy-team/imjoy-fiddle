@@ -284,9 +284,6 @@ export default {
           },
           "Shift-Tab": cm => {
             cm.indentSelection("subtract");
-          },
-          "Shift-Enter": () => {
-            this.run();
           }
         }
       }
@@ -371,6 +368,14 @@ export default {
       this.originalSource = code;
       this.editor.setValue(code);
       this.config = config || {};
+      for (const k of Object.keys(this.config.ui_elements)) {
+        const elm = this.config.ui_elements[k];
+        if (elm.shortcut) {
+          this.cmOptions.extraKeys[elm.shortcut] = () => {
+            elm.callback(this.code);
+          };
+        }
+      }
       this.config.lang = this.config.lang || "html";
       if (this.config.lang === "html") {
         this.cmOptions.mode = IMJOY_MODE;
