@@ -41,7 +41,7 @@
           @click="loadTemplate(t)"
           :key="t.name"
         >
-          <b-icon icon="file-star-outline"></b-icon>{{ t.name }} template
+          <b-icon icon="file-star-outline"></b-icon>{{ t.name }}
         </b-navbar-item>
         <b-navbar-item href="#" @click="saveFile()" v-show="config.enable_save">
           <b-icon icon="file-download-outline"></b-icon> Save File
