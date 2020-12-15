@@ -38,7 +38,7 @@
           href="#"
           v-show="config.enable_tempates"
           v-for="t in config.templates"
-          @click="loadTemplate(t.url)"
+          @click="loadTemplate(t)"
           :key="t.name"
         >
           <b-icon icon="file-star-outline"></b-icon>{{ t.name }} template
@@ -223,27 +223,32 @@ export default {
       imjoyTemplates: [
         {
           name: "empty",
-          url: null
+          url: null,
+          lang: 'html',
         },
         {
           name: "window",
           url:
-            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/windowTemplate.imjoy.html"
+            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/windowTemplate.imjoy.html",
+          lang: 'html',
         },
         {
           name: "web-worker",
           url:
-            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webWorkerTemplate.imjoy.html"
+            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webWorkerTemplate.imjoy.html",
+          lang: 'html',
         },
         {
           name: "web-python",
           url:
-            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webPythonTemplate.imjoy.html"
+            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webPythonTemplate.imjoy.html",
+          lang: 'html',
         },
         {
           name: "native-python",
           url:
-            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/nativePythonTemplate.imjoy.html"
+            "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/nativePythonTemplate.imjoy.html",
+          lang: 'html',
         }
       ],
       cmOptions: {
@@ -409,7 +414,8 @@ export default {
       this.editor.setSize(bbox.width, bbox.height - 52);
       setTimeout(this.editor.refresh(), 1);
     },
-    async loadTemplate(url) {
+    async loadTemplate(template) {
+      const url = template.url
       if (!url) {
         this.code = "";
         return;
@@ -417,6 +423,7 @@ export default {
       const blob = await fetch(url).then(r => r.blob());
       const temp = await new Response(blob).text();
       this.code = temp;
+      this.setLang(template.lang)
     },
     async install() {
       try {
