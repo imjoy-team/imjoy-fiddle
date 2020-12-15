@@ -37,7 +37,7 @@
         <b-navbar-item
           href="#"
           v-show="config.enable_tempates"
-          v-for="t in templates"
+          v-for="t in config.templates"
           @click="loadTemplate(t.url)"
           :key="t.name"
         >
@@ -220,7 +220,7 @@ export default {
       originalSource: null,
       api: null,
       plugin: null,
-      templates: [
+      imjoyTemplates: [
         {
           name: "empty",
           url: null
@@ -369,6 +369,16 @@ export default {
       this.originalSource = code;
       this.editor.setValue(code);
       this.config = config || {};
+
+      // if no templates set, then use default
+      if (this.config.enable_tempates && !this.config.templates) {
+        this.config.templates = this.imjoyTemplates;
+      } else if (
+        this.config.templates &&
+        this.config.enable_tempates === undefined
+      ) {
+        this.config.enable_tempates = true;
+      }
       for (const k of Object.keys(this.config.ui_elements)) {
         const elm = this.config.ui_elements[k];
         if (elm.shortcut) {
