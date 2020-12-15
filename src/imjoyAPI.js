@@ -5,7 +5,8 @@ export async function setupImJoyAPI({
   setLoader,
   updateUIElement,
   addUIElement,
-  removeUIElement
+  removeUIElement,
+  setLang
 }) {
   const imjoyRPC = await window.imjoyLoader.loadImJoyRPC({
     api_version: "0.2.3"
@@ -31,6 +32,7 @@ export async function setupImJoyAPI({
     setContent,
     getContent,
     setLoader,
+    setLang,
     updateUIElement,
     addUIElement,
     removeUIElement

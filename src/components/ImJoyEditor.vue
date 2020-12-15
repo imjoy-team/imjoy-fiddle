@@ -303,7 +303,8 @@ export default {
         setLoader: this.setLoader,
         updateUIElement: this.updateUIElement,
         addUIElement: this.addUIElement,
-        removeUIElement: this.removeUIElement
+        removeUIElement: this.removeUIElement,
+        setLang: this.setLang
       }).then(api => {
         this.api = api;
       });
@@ -376,21 +377,7 @@ export default {
           };
         }
       }
-      this.config.lang = this.config.lang || "html";
-      if (this.config.lang === "html") {
-        this.cmOptions.mode = IMJOY_MODE;
-      } else if (
-        this.config.lang === "js" ||
-        this.config.lang === "javascript"
-      ) {
-        this.cmOptions.mode = {
-          name: "javascript"
-        };
-      } else if (this.config.lang === "py" || this.config.lang === "python") {
-        this.cmOptions.mode = {
-          name: "python"
-        };
-      }
+      this.setLang();
       if (this.config.show_file_menu === undefined)
         this.config.show_file_menu = true;
       if (this.config.fold) {
@@ -435,6 +422,23 @@ export default {
         );
       } finally {
         this.loading = false;
+      }
+    },
+    setLang(lang) {
+      this.config.lang = lang || this.config.lang || "html";
+      if (this.config.lang === "html") {
+        this.cmOptions.mode = IMJOY_MODE;
+      } else if (
+        this.config.lang === "js" ||
+        this.config.lang === "javascript"
+      ) {
+        this.cmOptions.mode = {
+          name: "javascript"
+        };
+      } else if (this.config.lang === "py" || this.config.lang === "python") {
+        this.cmOptions.mode = {
+          name: "python"
+        };
       }
     },
     async run() {
