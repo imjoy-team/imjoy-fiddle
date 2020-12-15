@@ -224,31 +224,31 @@ export default {
         {
           name: "empty",
           url: null,
-          lang: 'html',
+          lang: "html"
         },
         {
           name: "window",
           url:
             "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/windowTemplate.imjoy.html",
-          lang: 'html',
+          lang: "html"
         },
         {
           name: "web-worker",
           url:
             "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webWorkerTemplate.imjoy.html",
-          lang: 'html',
+          lang: "html"
         },
         {
           name: "web-python",
           url:
             "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/webPythonTemplate.imjoy.html",
-          lang: 'html',
+          lang: "html"
         },
         {
           name: "native-python",
           url:
             "https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/src/plugins/nativePythonTemplate.imjoy.html",
-          lang: 'html',
+          lang: "html"
         }
       ],
       cmOptions: {
@@ -415,7 +415,7 @@ export default {
       setTimeout(this.editor.refresh(), 1);
     },
     async loadTemplate(template) {
-      const url = template.url
+      const url = template.url;
       if (!url) {
         this.code = "";
         return;
@@ -423,7 +423,7 @@ export default {
       const blob = await fetch(url).then(r => r.blob());
       const temp = await new Response(blob).text();
       this.code = temp;
-      this.setLang(template.lang)
+      this.setLang(template.lang);
     },
     async install() {
       try {
