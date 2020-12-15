@@ -83,7 +83,7 @@
             href="#"
             v-for="item in elm.items"
             :style="item.style"
-            @click="item.callback(code)"
+            @click="item.callback(item, code)"
             :key="item.label"
           >
             {{ item.label }}
