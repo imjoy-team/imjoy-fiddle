@@ -16,7 +16,7 @@ export async function setupImJoyAPI({
     version: "0.1.0",
     description: "ImJoyFiddle -- a playground for ImJoy plugins",
     type: "rpc-window",
-    defaults: { fullscreen: true }
+    defaults: {}
   });
 
   const service_api = {
