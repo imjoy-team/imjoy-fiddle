@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.5f583a04aa0029e8ddb59968820a7954.js"
+  "/precache-manifest.5063c0f01498a9a98add6614f74d3f5f.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "imjoy-fiddle"});
