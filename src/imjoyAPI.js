@@ -24,8 +24,8 @@ export async function setupImJoyAPI({
       api.log("ImJoyFiddle loaded successfully.");
     },
     async run(ctx) {
-      if (ctx && ctx.data && ctx.data.code) {
-        loadSourceCode(ctx.data.code, ctx.config);
+      if (ctx && (ctx.data || ctx.config)) {
+        loadSourceCode(ctx.data && ctx.data.code, ctx.config);
       }
     },
     setContent,
