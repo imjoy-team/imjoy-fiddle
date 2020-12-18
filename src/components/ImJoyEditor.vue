@@ -31,7 +31,7 @@
           href="#"
           @click="$refs.file_select.click()"
         >
-          <b-icon icon="file-code-outline"></b-icon> Open Local File
+          <b-icon icon="file-code-outline"></b-icon> Open
         </b-navbar-item>
 
         <b-navbar-item
