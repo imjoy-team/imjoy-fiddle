@@ -371,6 +371,7 @@ export default {
       reader.readAsText(file);
     },
     loadSourceCode(code, config) {
+      code = code || "";
       this.originalSource = code;
       this.editor.setValue(code);
       this.config = config || {};
