@@ -530,6 +530,11 @@ export default {
 </script>
 
 <style lang="css">
+body {
+  height: 100vh;
+  width: 100vw;
+}
+
 .editor {
   height: calc(100vh - 52px);
 }
