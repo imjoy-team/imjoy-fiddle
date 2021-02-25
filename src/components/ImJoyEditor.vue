@@ -385,13 +385,22 @@ export default {
       ) {
         this.config.enable_tempates = true;
       }
-      for (const k of Object.keys(this.config.ui_elements)) {
-        const elm = this.config.ui_elements[k];
-        if (elm.shortcut) {
-          this.cmOptions.extraKeys[elm.shortcut] = () => {
-            elm.callback(this.code);
-          };
+      if (this.config.ui_elements) {
+        for (const k of Object.keys(this.config.ui_elements)) {
+          const elm = this.config.ui_elements[k];
+          if (elm.shortcut) {
+            this.cmOptions.extraKeys[elm.shortcut] = () => {
+              elm.callback(this.code);
+            };
+          }
         }
+      } else {
+        // default buttons
+        this.config.enable_tempates = true;
+        this.config.templates = this.imjoyTemplates;
+        this.config.enable_run_button = true;
+        this.config.enable_save = true;
+        this.config.enable_stop_button = true;
       }
       this.setLang();
       if (this.config.show_file_menu === undefined)
