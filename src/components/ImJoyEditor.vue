@@ -466,6 +466,10 @@ export default {
         this.cmOptions.mode = {
           name: "python"
         };
+      } else{
+        this.cmOptions.mode = {
+          name: this.config.lang
+        };
       }
     },
     async run() {
