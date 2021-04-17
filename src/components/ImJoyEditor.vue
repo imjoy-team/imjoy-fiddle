@@ -252,14 +252,14 @@ export default {
         }
       ],
       cmOptions: {
-        tabSize: 4,
         styleActiveLine: true,
         lineNumbers: true,
         line: true,
         foldGutter: true,
         styleSelectedText: true,
         keyMap: "sublime",
-        indentUnit: 0,
+        tabSize: 4,
+        indentUnit: 4,
         smartIndent: true,
         matchBrackets: true,
         showCursorWhenSelecting: true,
@@ -277,16 +277,7 @@ export default {
           Esc(cm) {
             if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
           },
-          Tab: cm => {
-            if (cm.somethingSelected()) {
-              cm.indentSelection("add");
-              return;
-            }
-
-            if (this.config.indentWithTabs)
-              cm.replaceSelection("\t", "end", "+input");
-            else cm.execCommand("insertSoftTab");
-          },
+          Tab: "indentMore",
           "Shift-Tab": cm => {
             cm.indentSelection("subtract");
           }
@@ -466,7 +457,7 @@ export default {
         this.cmOptions.mode = {
           name: "python"
         };
-      } else{
+      } else {
         this.cmOptions.mode = {
           name: this.config.lang
         };
