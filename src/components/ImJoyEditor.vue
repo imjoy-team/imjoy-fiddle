@@ -351,6 +351,10 @@ export default {
           };
         } else if (file.name.endsWith(".imjoy.html")) {
           this.cmOptions.mode = IMJOY_MODE;
+        } else if (file.name.endsWith(".md")) {
+          this.cmOptions.mode = "markdown";
+        } else {
+          this.cmOptions.mode = "text/plain";
         }
         this.editor.setValue(code);
       };
@@ -459,7 +463,7 @@ export default {
         };
       } else {
         this.cmOptions.mode = {
-          name: this.config.lang
+          name: this.config.lang || "text/plain"
         };
       }
     },
