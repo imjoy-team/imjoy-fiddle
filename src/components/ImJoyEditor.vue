@@ -33,6 +33,9 @@
         >
           <b-icon icon="file-code-outline"></b-icon> Open
         </b-navbar-item>
+        <b-navbar-item :disabled="loading" href="#" @click="openURL">
+          <b-icon icon="file-code-outline"></b-icon> Open URL
+        </b-navbar-item>
 
         <b-navbar-item
           href="#"
@@ -150,6 +153,7 @@
 <script>
 import { version } from "../../package.json";
 import { setupImJoyAPI } from "../imjoyAPI";
+import { githubUrlRaw } from "../utils";
 // require component
 import { codemirror } from "vue-codemirror";
 
@@ -341,21 +345,7 @@ export default {
       reader.onload = () => {
         const code = reader.result;
         this.originalSource = code;
-        if (file.name.endsWith(".js")) {
-          this.cmOptions.mode = {
-            name: "javascript"
-          };
-        } else if (file.name.endsWith(".py")) {
-          this.cmOptions.mode = {
-            name: "python"
-          };
-        } else if (file.name.endsWith(".imjoy.html")) {
-          this.cmOptions.mode = IMJOY_MODE;
-        } else if (file.name.endsWith(".md")) {
-          this.cmOptions.mode = "markdown";
-        } else {
-          this.cmOptions.mode = "text/plain";
-        }
+        this.setLang(this.inferLang(file.name));
         this.editor.setValue(code);
       };
       reader.onerror = e => {
@@ -419,6 +409,16 @@ export default {
       this.editor.setSize(bbox.width, bbox.height - 52);
       setTimeout(this.editor.refresh(), 1);
     },
+    async openURL() {
+      let url = prompt("Please type a URL");
+      if (url) {
+        url = (await githubUrlRaw(url)) || url;
+        await this.loadTemplate({
+          url: url,
+          lang: this.inferLang(url.split("?")[0])
+        });
+      }
+    },
     async loadTemplate(template) {
       const url = template.url;
       if (!url) {
@@ -446,6 +446,19 @@ export default {
         this.loading = false;
       }
     },
+    inferLang(fileName) {
+      if (fileName.endsWith(".js")) {
+        this.config.lang = "javascript";
+      } else if (fileName.endsWith(".py")) {
+        this.config.lang = "python";
+      } else if (fileName.endsWith(".imjoy.html")) {
+        this.config.lang = "imjoy";
+      } else if (fileName.endsWith(".md")) {
+        this.config.lang = "markdown";
+      } else {
+        this.config.lang = "text";
+      }
+    },
     setLang(lang) {
       this.config.lang = lang || this.config.lang || "html";
       if (this.config.lang === "html") {
@@ -461,6 +474,10 @@ export default {
         this.cmOptions.mode = {
           name: "python"
         };
+      } else if (this.config.lang === "markdown") {
+        this.cmOptions.mode = { name: "text/x-markdown" };
+      } else if (this.config.lang === "imjoy") {
+        this.cmOptions.mode = IMJOY_MODE;
       } else {
         this.cmOptions.mode = {
           name: this.config.lang || "text/plain"
