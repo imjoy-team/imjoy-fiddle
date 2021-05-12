@@ -549,7 +549,10 @@ export default {
       }
     },
     saveFile() {
-      this.api.exportFile(this.editor.getValue(), "myPlugin.imjoy.html");
+      const content = this.editor.getValue()
+      const regex = /<.*>\s*{\s*"name":\s*"(.*)"\s*,/gm;
+      const name = regex.exec(content)[1]
+      this.api.exportFile(content, (name||'myPlugin') + ".imjoy.html");
     }
   }
 };
