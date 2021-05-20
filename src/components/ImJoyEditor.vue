@@ -711,9 +711,9 @@ body {
 
 .modal-card {
   height: 800px;
-  max-height: 100%;
-  width: 800px !important;
-  max-width: 100%;
+  max-height: 100vh!important;
+  width: 800px!important;
+  max-width: 100vw!important;
 }
 
 .modal-card-head {
