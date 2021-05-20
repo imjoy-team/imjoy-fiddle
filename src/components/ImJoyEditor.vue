@@ -6,15 +6,6 @@
       <div></div>
       <div></div>
     </div>
-    <form v-show="false" ref="file_form">
-      <input
-        class="md-file"
-        type="file"
-        @change="fileSelected"
-        ref="file_select"
-        multiple
-      />
-    </form>
     <div class="navbar" is-block>
       <!-- <template slot="brand"> -->
       <b-navbar-item tag="router-link" :to="{ path: '/' }">
@@ -29,12 +20,9 @@
         <b-navbar-item
           :disabled="loading"
           href="#"
-          @click="$refs.file_select.click()"
+          @click="showOpenFileDialog()"
         >
-          <b-icon icon="file-code-outline"></b-icon> Open
-        </b-navbar-item>
-        <b-navbar-item :disabled="loading" href="#" @click="openURL">
-          <b-icon icon="file-code-outline"></b-icon> Open URL
+          <b-icon icon="folder-open"></b-icon> Open
         </b-navbar-item>
 
         <b-navbar-item
@@ -153,7 +141,7 @@
 <script>
 import { version } from "../../package.json";
 import { setupImJoyAPI } from "../imjoyAPI";
-import { githubUrlRaw } from "../utils";
+import FileSelection from "./FileSelection";
 // require component
 import { codemirror } from "vue-codemirror";
 
@@ -334,11 +322,6 @@ export default {
     }
   },
   methods: {
-    fileSelected() {
-      if (!this.$refs.file_select.files) return;
-      const file = this.$refs.file_select.files[0];
-      this.loadCodeFromFile(file);
-    },
     loadCodeFromFile(file) {
       if (!file) return;
       const reader = new FileReader();
@@ -408,16 +391,6 @@ export default {
       const bbox = document.body.getBoundingClientRect();
       this.editor.setSize(bbox.width, bbox.height - 52);
       setTimeout(this.editor.refresh(), 1);
-    },
-    async openURL() {
-      let url = prompt("Please type a URL");
-      if (url) {
-        url = (await githubUrlRaw(url)) || url;
-        await this.loadTemplate({
-          url: url,
-          lang: this.inferLang(url.split("?")[0])
-        });
-      }
     },
     async loadTemplate(template) {
       const url = template.url;
@@ -548,6 +521,31 @@ export default {
         this.loading = false;
       }
     },
+    async loadCodeFromURL(url, lang) {
+      const blob = await fetch(url).then(r => r.blob());
+      const temp = await new Response(blob).text();
+      this.code = temp;
+      this.setLang(lang);
+    },
+    async showOpenFileDialog() {
+      const self = this;
+      await this.$buefy.modal.open({
+        parent: this,
+        component: FileSelection,
+        props: {
+          title: "Open File",
+          selected(file, fileName) {
+            console.log("loading file from ", file, fileName);
+            if (file instanceof Blob) self.loadCodeFromFile(file);
+            else self.loadCodeFromURL(file, self.inferLang(fileName));
+          }
+        },
+        hasModalCard: true,
+        customClass: "custom-class custom-class-2",
+        trapFocus: true
+      });
+    },
+
     saveFile() {
       const content = this.editor.getValue();
       const regex = /<.*>\s*{\s*"name":\s*"(.*)"\s*,/gm;
