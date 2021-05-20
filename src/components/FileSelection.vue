@@ -383,7 +383,7 @@ export default {
     },
     loginGithub() {
       return new Promise((resolve, reject) => {
-        const authenticator = new Authenticator({ site_id: "app.imjoy.io" });
+        const authenticator = new Authenticator({ site_id: "if.imjoy.io" });
         authenticator.authenticate(
           { provider: "github", scope: "user" },
           async (err, data) => {
