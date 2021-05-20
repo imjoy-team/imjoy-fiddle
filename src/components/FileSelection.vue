@@ -99,6 +99,7 @@
                   placeholder="Select a repo"
                   field="name"
                   :open-on-focus="true"
+                  v-model="selectedRepo"
                   @select="
                     repo => {
                       selectedRepo = repo.name;
@@ -235,6 +236,7 @@ export default {
       this.listGists();
     },
     async listOwners() {
+      this.githubTreeConfig = null;
       this.selectedUser = null;
       this.selectedRepo = null;
       this.selectedBranch = null;
@@ -262,6 +264,7 @@ export default {
       return repos;
     },
     async listRepos() {
+      this.githubTreeConfig = null;
       this.selectedRepo = null;
       this.selectedBranch = null;
       this.currentRepoPage = 0;
@@ -272,6 +275,7 @@ export default {
       this.repos = this.repos.concat(await this.getRepos());
     },
     async listBranches() {
+      this.githubTreeConfig = null;
       this.selectedBranch = null;
       const repo = this.repos.filter(
         repo => repo.name === this.selectedRepo
@@ -289,6 +293,7 @@ export default {
       }
     },
     async getTree() {
+      this.githubTreeConfig = null;
       const loadingComponent = this.$buefy.loading.open({
         container: this.$el
       });
@@ -420,7 +425,7 @@ export default {
                 auth: data.token
               })
             );
-            this.activeTab = 2;
+            this.activeTab = 3;
             resolve();
           }
         );

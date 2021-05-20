@@ -710,10 +710,10 @@ body {
 }
 
 .modal-card {
-  height: 800px;
-  max-height: 100vh!important;
-  width: 800px!important;
-  max-width: 100vw!important;
+  height: 800px !important;
+  max-height: 100vh !important;
+  width: 800px !important;
+  max-width: 100vw !important;
 }
 
 .modal-card-head {
