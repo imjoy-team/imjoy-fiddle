@@ -708,4 +708,24 @@ body {
     transform: translate(24px, 0);
   }
 }
+
+.modal-card {
+  height: 800px;
+  max-height: 100%;
+  width: 800px !important;
+  max-width: 100%;
+}
+
+.modal-card-head {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+.modal-card-title {
+  font-size: 1rem;
+}
+
+.modal-card-foot {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
 </style>

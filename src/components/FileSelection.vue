@@ -51,9 +51,9 @@
             <tree v-if="gistTreeConfig" :config="gistTreeConfig"></tree>
             <b-button
               size="is-small"
-              v-if="currentPage > 0"
+              v-if="currentGistPage > 0"
               @click="
-                currentPage = currentPage - 1;
+                currentGistPage = currentGistPage - 1;
                 listGists();
               "
               icon-left="chevron-left"
@@ -63,7 +63,7 @@
             <b-button
               size="is-small"
               @click="
-                currentPage = currentPage + 1;
+                currentGistPage = currentGistPage + 1;
                 listGists();
               "
               icon-left="chevron-right"
@@ -76,6 +76,7 @@
             <div class="columns" v-if="userInfo">
               <div class="column">
                 <b-select
+                  expanded
                   sytle="width: 100px;"
                   placeholder="Select a user/organization"
                   v-model="selectedUser"
@@ -93,24 +94,30 @@
                 </b-select>
               </div>
               <div class="column">
-                <b-select
-                  sytle="width: 100px;"
-                  v-if="repos"
+                <b-autocomplete
+                  :data="repos"
                   placeholder="Select a repo"
-                  v-model="selectedRepo"
-                  @input="listBranches()"
+                  field="name"
+                  :open-on-focus="true"
+                  @select="
+                    repo => {
+                      selectedRepo = repo.name;
+                      listBranches();
+                    }
+                  "
+                  :check-infinite-scroll="true"
+                  @infinite-scroll="getMoreRepos"
                 >
-                  <option
-                    v-for="repo in repos"
-                    :value="repo.name"
-                    :key="repo.id"
-                  >
-                    {{ repo.name }}
-                  </option>
-                </b-select>
+                  <template slot-scope="props">
+                    <div>
+                      {{ props.option.name }}
+                    </div>
+                  </template>
+                </b-autocomplete>
               </div>
               <div class="column">
                 <b-select
+                  expanded
                   sytle="width: 100px;"
                   v-if="branches"
                   placeholder="Select a branch"
@@ -133,7 +140,6 @@
           <b-tab-item :visible="!octokit" label="Github" icon="github">
             <div class="buttons">
               <b-button
-                size="is-small"
                 type="is-primary"
                 expanded
                 @click="connectGithub()"
@@ -180,7 +186,8 @@ export default {
       githubTreeConfig: null,
       selectedGistFile: null,
       selectedGithubFile: null,
-      currentPage: 0,
+      currentGistPage: 0,
+      currentRepoPage: 0,
       activeTab: 0,
       orgas: null,
       userInfo: null,
@@ -238,17 +245,31 @@ export default {
       this.selectedUser = this.userInfo.login;
       await this.listRepos();
     },
+    async getRepos() {
+      let repos;
+      if (this.selectedUser === this.userInfo.login)
+        repos = ( //TODO: what if the user has more than 100 repo
+          await this.octokit.rest.repos.listForAuthenticatedUser({
+            sort: "updated",
+            per_page: 20,
+            page: this.currentRepoPage
+          })
+        ).data;
+      else
+        repos = (
+          await this.octokit.rest.repos.listForOrg({ org: this.selectedUser })
+        ).data;
+      return repos;
+    },
     async listRepos() {
       this.selectedRepo = null;
       this.selectedBranch = null;
-      if (this.selectedUser === this.userInfo.login)
-        this.repos = (
-          await this.octokit.rest.repos.listForAuthenticatedUser()
-        ).data;
-      else
-        this.repos = (
-          await this.octokit.rest.repos.listForOrg({ org: this.selectedUser })
-        ).data;
+      this.currentRepoPage = 0;
+      this.repos = await this.getRepos();
+    },
+    async getMoreRepos() {
+      this.currentRepoPage = this.currentRepoPage + 1;
+      this.repos = this.repos.concat(await this.getRepos());
     },
     async listBranches() {
       this.selectedBranch = null;
@@ -348,7 +369,7 @@ export default {
       try {
         const gists = await this.octokit.rest.gists.list({
           per_page: 10,
-          page: this.currentPage
+          page: this.currentGistPage
         });
         const self = this;
         this.selectedGistFile = null;
