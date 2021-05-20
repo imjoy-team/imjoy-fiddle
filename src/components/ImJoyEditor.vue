@@ -422,6 +422,8 @@ export default {
     inferLang(fileName) {
       if (fileName.endsWith(".js")) {
         this.config.lang = "javascript";
+      } else if (fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
+        this.config.lang = "yaml";
       } else if (fileName.endsWith(".py")) {
         this.config.lang = "python";
       } else if (fileName.endsWith(".imjoy.html")) {

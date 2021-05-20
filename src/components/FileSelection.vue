@@ -301,7 +301,7 @@ export default {
       const repo = this.repos.filter(
         repo => repo.name === this.selectedRepo
       )[0];
-      const buildNodes = async sha => {
+      const buildNodes = async (sha, path) => {
         const data = (
           await self.octokit.rest.git.getTree({
             owner: repo.owner.login, // the repo maybe owned by users other than this.selectedUser
@@ -311,9 +311,12 @@ export default {
         ).data;
         const nodes = [];
         for (let fileObj of data.tree) {
+          // convert to absolute path
+          fileObj.name = fileObj.path;
+          if (path) fileObj.path = path + "/" + fileObj.path;
           if (fileObj.type === "tree") {
             const itm = {
-              title: fileObj.path,
+              title: fileObj.name,
               isExpanded: false,
               children: [],
               data: fileObj
@@ -321,7 +324,7 @@ export default {
             nodes.push(itm);
           } else {
             const itm = {
-              title: fileObj.path,
+              title: fileObj.name,
               isExpanded: false,
               data: fileObj,
               isLeaf: true
@@ -352,7 +355,7 @@ export default {
           },
           async node_toggle_callback(node) {
             if (!node.isExpanded) {
-              node.children = await buildNodes(node.data.sha);
+              node.children = await buildNodes(node.data.sha, node.data.path);
               self.$forceUpdate();
             }
             return node;
@@ -475,15 +478,15 @@ export default {
         const repo = this.repos.filter(
           repo => repo.name === this.selectedRepo
         )[0];
+        console.log("===>", this.selectedGithubFile);
         const result = (
           await this.octokit.rest.repos.getContent({
             owner: repo.owner.login,
             repo: repo.name,
-            path: this.selectedGithubFile.path
+            path: "/" + this.selectedGithubFile.path
           })
         ).data;
-        console.log("===>", this.selectedGithubFile);
-        this.selected(result.download_url, this.selectedGithubFile.path);
+        this.selected(result.download_url, this.selectedGithubFile.name);
         this.$emit("close");
       }
     }
