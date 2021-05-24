@@ -250,7 +250,8 @@ export default {
     async getRepos() {
       let repos;
       if (this.selectedUser === this.userInfo.login)
-        repos = ( //TODO: what if the user has more than 100 repo
+        repos = //TODO: what if the user has more than 100 repo
+        (
           await this.octokit.rest.repos.listForAuthenticatedUser({
             sort: "updated",
             per_page: 20,
@@ -440,12 +441,12 @@ export default {
         this.$emit("close");
       }
       if (this.activeTab === 1) {
+        const url = (await githubUrlRaw(this.webURL)) || this.webURL;
         const http = new XMLHttpRequest();
-        http.open("HEAD", this.webURL);
+        http.open("HEAD", url);
         http.onload = async () => {
           if (http.readyState == http.DONE) {
             if (http.status != 404 && !this.webURLError) {
-              const url = (await githubUrlRaw(this.webURL)) || this.webURL;
               this.selected(
                 url,
                 url
