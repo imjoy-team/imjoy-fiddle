@@ -250,7 +250,8 @@ export default {
     async getRepos() {
       let repos;
       if (this.selectedUser === this.userInfo.login)
-        repos = ( //TODO: what if the user has more than 100 repo
+        //TODO: what if the user has more than 100 repo
+        repos = (
           await this.octokit.rest.repos.listForAuthenticatedUser({
             sort: "updated",
             per_page: 20,
