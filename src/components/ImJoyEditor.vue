@@ -463,9 +463,12 @@ export default {
       try {
         this.loading = true;
         this.api.showProgress(0);
-        this.plugin = await this.api.loadPlugin({src: this.editor.getValue()}, {
-          namespace: this.config.namespace
-        });
+        this.plugin = await this.api.loadPlugin(
+          { src: this.editor.getValue() },
+          {
+            namespace: this.config.namespace
+          }
+        );
         if (!this.loading) {
           this.plugin = null;
           return;
